@@ -123,7 +123,7 @@ class Boardgame(object):
         else:
             # search up-and-right
             print "Searching up-and-right"
-            for x in range(i,self.width-1,1):
+            for x in range(i,self.width,1):
                 if y>=0:
                     print "(x,y) = (%s,%s) = %s" % (x,y,self.spaces[(x,y)])
                     self.diag.append(self.spaces[(x,y)])
