@@ -12,7 +12,7 @@ class Gameboard(object):
         rowCount = rowCount
         columnCount = columnCount
         length = rowCount*columnCount
-        # can git see this?
+        
         curRow = 0
         curCol = 0
         rows = [Row() for x in range(rowCount)]
