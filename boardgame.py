@@ -1,3 +1,14 @@
+#!/usr/bin/python
+
+# Uncomment for Web Use!
+# # enable debugging
+# # import cgitb
+# # cgitb.enable()
+
+# # print('Content-type: text/html\r\n\r')
+
+
+
 # boardgame.py
 # cd r:\sandbox\git
 # python boardgame.py
@@ -25,32 +36,30 @@ class Boardgame(object):
             for c in range(self.width):
                 self.spaces[(c, r)] = self.players[0]
                 # DEBUG
-                print "c=%s, r=%s" % (c, r)
+                # print "c=%s, r=%s" % (c, r)
         # DEBUG
-        self.printSpaceList()
+        # self.printSpaceList()
 
-    # prints board by making strings of rows
-    def printBoardPlain(self):
-        printString = ""
+    # prints board by making string
+    # Option 0 = No coordinates
+    # Option 1 = With Coordinates
+    def printBoard(self,option = 0):
+        if option == 1:
+            # print coordinates
+            printString = "   "
+            for x in range(self.width):
+                printString += str(x) + " "
+            printString += "\n\n"
+        else:
+            # don't print coordinates
+            printString = ""
         for r in range(self.height):
+            if option == 1:
+                # print coordinates
+                printString += str(r) + "  "
             for c in range(self.width):
                 printString += str(self.spaces[(c, r)]) + " "
             printString += "\n"
-        printString += "\n"
-        print printString
-
-    # prints board with coordinates for making moves
-    def printBoard(self):
-        printString = "   "
-        for x in range(self.width):
-            printString += str(x) + " "
-        printString += "\n\n"
-        for r in range(self.height):
-            printString += str(r) + "  "
-            for c in range(self.width):
-                printString += str(self.spaces[(c, r)]) + " "
-            printString += "\n"
-        printString += "\n"
         print printString
 
     # prints coordinates and values for all spaces
@@ -103,7 +112,7 @@ class Boardgame(object):
                 # print "X=%s  Y=%s  Z=%s (x-y)   Space = %s" % (x, y, z, self.spaces[(z, y)])
             self.diagonals.append(self.diag)
             self.diag = []
-        print self.diagonals
+        # print self.diagonals
 
     # gets diagonal given starting location
     # direction = 0 goes up-and-right
@@ -114,21 +123,24 @@ class Boardgame(object):
         y = j
         if direction == 1:
             # search up-and-left
-            print "Searching up-and-left"
+            # Debug
+            # print "Searching up-and-left"
             for x in range(i, -1, -1):
                 if y >= 0:
-                    print "(x, y) = (%s, %s) = %s" % (x, y, self.spaces[(x, y)])
+                    # Debug
+                    # print "(x, y) = (%s, %s) = %s" % (x, y, self.spaces[(x, y)])
                     self.diag.append(self.spaces[(x, y)])
                     y = y-1
         else:
             # search up-and-right
-            print "Searching up-and-right"
+            # Debug
+            # print "Searching up-and-right"
             for x in range(i, self.width, 1):
                 if y >= 0:
-                    print "(x, y) = (%s, %s) = %s" % (x, y, self.spaces[(x, y)])
+                    # Debug
+                    # print "(x, y) = (%s, %s) = %s" % (x, y, self.spaces[(x, y)])
                     self.diag.append(self.spaces[(x, y)])
                     y = y-1
-
         return self.diag
 
     def changeSpace(self, x, y, p):
@@ -147,6 +159,10 @@ class Boardgame(object):
         print self.coords[0]
         print self.coords[1]
 
+class Space(self):
+    mark = "."
+    player = 0
+    winner = False
 
 class TicTacToe(Boardgame):
     width = 3
@@ -176,6 +192,23 @@ class Connect4(Boardgame):
     players = [".", "#", "+"]
     spaces = []
     name = "Connect4"
+    
+    def randomBoard(self):
+        for r in range(self.height):
+            for c in range(self.width):
+                randP = random.randint(0, len(self.players)-1)
+                self.spaces[(c, r)] = self.players[randP]
+    
+    def applyGravity(self):
+        self.printBoard(1)
+        print "Applying gravity!"
+        for x in range(self.width):
+            for y in range(self.height-1,-1,-1):
+                if self.spaces[(x, y)] == self.players[0]:
+                    self.changeSpace(x,y,self.spaces[(x,y-1)])
+                    self.changeSpace(x,y-1,self.players[0])
+                    y += 1
+        self.printBoard(1)
 
 # ==============================
 #             MAIN
@@ -185,29 +218,15 @@ ttt = TicTacToe()
 c4 = Connect4()
 
 c4.randomBoard()
-c4.printBoard()
-
 ttt.randomBoard()
-ttt.printBoard()
 
-ttt.printSpaceList()
-c4.printSpaceList()
+ttt.printBoard(1)
+c4.printBoard(1)
 
-print "C4.WIDTH = ", c4.width
-print "C4.HEIGHT = ", c4.height
+print "------------------------------------"
+c4.applyGravity()
 
-# ttt.getDiagonals()
-# print ttt.diagonals
+# ttt.printSpaceList()
+# c4.printSpaceList()
 
-print ""
-c4.printBoard()
-
-print c4.getDiag(3, 3, 0)
-print c4.getDiag(3, 3, 1)
-
-print c4.getDiag(0, 0, 0)
-print c4.getDiag(0, 0, 1)
-
-print c4.getDiag(5, 3, 0)
-print c4.getDiag(5, 3, 1)
 
