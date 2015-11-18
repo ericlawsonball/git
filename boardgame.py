@@ -25,6 +25,9 @@ class Boardgame(object):
     columns = []
     diagonals = []
     name = "B04RDG4M3"
+    players = []
+    flagIsFull = False
+    winner = 0
 
     def __init__(self):
         # set up spaces
@@ -34,12 +37,15 @@ class Boardgame(object):
         self.spaces = {}
         for r in range(self.height):
             for c in range(self.width):
-                self.spaces[(c, r)] = self.players[0]
+                self.spaces[(c, r)] = Space(0)
                 # DEBUG
                 # print "c=%s, r=%s" % (c, r)
         # DEBUG
         # self.printSpaceList()
 
+    def __str__(self):
+        return self.name
+    
     # prints board by making string
     # Option 0 = No coordinates
     # Option 1 = With Coordinates
@@ -144,7 +150,7 @@ class Boardgame(object):
         return self.diag
 
     def changeSpace(self, x, y, p):
-        self.spaces[(x, y)] = self.players[p]
+        self.spaces[(x, y)] = self.players[p.number]
 
     # creates a random board
     # randomly assigns each space to a player
@@ -158,16 +164,53 @@ class Boardgame(object):
         self.coords = raw_input("\nMove? x, y >>").split(",")
         print self.coords[0]
         print self.coords[1]
+        
+    def checkIfFull(self):
+        self.flagIsFull = True
+        for x in range(self.width):
+            for y in range(self.height):
+                if self.spaces[(x,y)] == self.players[0]:
+                    self.flagIsFull = False
+    
+        
 
-class Space(self):
-    mark = "."
+class Space(object):
+    marker = "."
     player = 0
     winner = False
+    x = 0
+    y = 0
+    num = 0
+
+    def __init__(self, gb):
+        # self.player = gb.players[0]
+        # self.marker = gb.players[p].marker
+        self.marker = "?"
+        pass
+        
+    def __str__(self):
+        return self.marker
+
+class Player(object):
+    marker = "."
+    number = 0
+    spaceCount = 0
+    bestMoveX = 0
+    bestMoveY = 0
+    opportunityCount = 0
+    
+    def __init__(self, num = 0, m = "."):
+        self.marker = m
+        self.number = num
+    
+    def __str__(self):
+        return self.marker
 
 class TicTacToe(Boardgame):
     width = 3
     height = 3
-    players = ["-", "X", "O"]
+    # players = ["-", "X", "O"]
+    players = [Player(0, "."), Player(1, "X"), Player(2, "O")]
     spaces = []
     name = "TicTacToe"
 
@@ -184,31 +227,77 @@ class TicTacToe(Boardgame):
             self.diag.append(self.spaces[(self.height-x-1, x)])
         self.diagonals.append(self.diag)
         self.diag = []
+    
+    # checks to see if entire diagonal is full of non-zeroes
+    # checks to see if entire 
+    def checkForWin(self):
+        w = 0
+        p = 0
+        self.getDiagonals()
+        print self.diagonals
+        self.checkSpaces(self.diagonals[0])
 
+    # s = spaces to check
+    # winCount = consequtive spaces for a win
+    def checkSpaces(self, s):
+        currentPlayer = s[0]
+        winner = s[0]
+        if currentPlayer != self.players[0]:
+            for x in s:
+                if x != self.players[0]:
+                    currentPlayer = x
+        else:
+            winner = 0
+        return winner
+                
+        
 
 class Connect4(Boardgame):
     width = 6
     height = 4
-    players = [".", "#", "+"]
+    # players = [".", "#", "+"]
+    players = [Player(0, "."), Player(1, "X"), Player(2, "O")]
     spaces = []
     name = "Connect4"
     
-    def randomBoard(self):
-        for r in range(self.height):
-            for c in range(self.width):
-                randP = random.randint(0, len(self.players)-1)
-                self.spaces[(c, r)] = self.players[randP]
+    # def randomBoard(self):
+        # for r in range(self.height):
+            # for c in range(self.width):
+                # randP = random.randint(0, len(self.players)-1)
+                # self.spaces[(c, r)] = self.players[randP]
+                
+    def randomMove(self):
+        x = random.randint(0, self.width-1)
+        print x
+        print self.spaces[(x, 0)]
+        if self.spaces[(x, 0)] == self.players[0]:
+            self.spaces[(x, 0)] = self.players[random.randint(1,len(self.players)-1)]
+        self.applyGravity()
+        self.checkIfFull()
     
     def applyGravity(self):
-        self.printBoard(1)
-        print "Applying gravity!"
-        for x in range(self.width):
-            for y in range(self.height-1,-1,-1):
-                if self.spaces[(x, y)] == self.players[0]:
-                    self.changeSpace(x,y,self.spaces[(x,y-1)])
-                    self.changeSpace(x,y-1,self.players[0])
-                    y += 1
-        self.printBoard(1)
+        # DEBUG
+        # self.printBoard(1)
+        # print "---------------Applying gravity!-----------------\n"
+        x = 0
+        while x < self.width:
+            y = 0
+            while y < self.height - 1:
+                # DEBUG
+                # print "(%s,%s)" % (x, y)
+                if self.spaces[(x, y)] != self.players[0] and \
+                self.spaces[(x, y + 1)] == self.players[0]:
+                    # DEBUG
+                    # print "Gap found! @ (%s,%s)" % (x, y)
+                    self.changeSpace(x, y + 1, self.spaces[(x, y)])
+                    self.changeSpace(x, y, self.players[0])
+                    y = -1
+                    # DEBUG
+                    # print "y = ", y
+                    # self.printBoard()
+                y += 1
+            x += 1
+        # self.printBoard(1)
 
 # ==============================
 #             MAIN
@@ -223,8 +312,20 @@ ttt.randomBoard()
 ttt.printBoard(1)
 c4.printBoard(1)
 
-print "------------------------------------"
+# print ttt
+# s1 = Space(ttt, 0)
+# print s1
+
 c4.applyGravity()
+print "-----------------APPLY GRAVITY-------------------"
+
+c4.printBoard(1)
+
+# ttt.checkForWin()
+
+# while c4.flagIsFull == False:
+#    c4.randomMove()
+#    c4.printBoard(1)
 
 # ttt.printSpaceList()
 # c4.printSpaceList()
